@@ -2,6 +2,7 @@
 
 #include <unordered_map>
 #include <filesystem>
+#include <iostream>
 #include <string>
 
 ParsedCmd parseCommandLine(int argc, char** argv) {
@@ -23,7 +24,7 @@ ParsedCmd parseCommandLine(int argc, char** argv) {
     ParsedCmd cmd;
     cmd.argument = it->second;
     if (cmd.argument == Arguments::Help) {
-        print_help_page();
+        std::cout << "Help page\n";
         throw;
     }
     if (cmd.argument == Arguments::Scan && argc < 3) {
