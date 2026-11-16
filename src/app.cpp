@@ -1,6 +1,7 @@
 #include "app.hpp"
 #include "scanner.hpp"
 #include "types.hpp"
+#include "saver.hpp"
 
 #include <vector>
 #include <iostream>
@@ -17,5 +18,7 @@ void App::run() {
             std::cout << "\tExtension: " << file.extension << '\n';
             std::cout << "\tSize: " << file.size << "\n\n";
         }
+        saveToJson(scanned);
+        std::cout << "All files information was saved to JSON file\n";
     }
 }

@@ -2,6 +2,7 @@
 
 #include <filesystem>
 #include <string>
+#include <string_view>
 #include <cstdint>
 
 struct FileEntry {
@@ -10,3 +11,6 @@ struct FileEntry {
     std::string extension;
     std::uintmax_t size;
 };
+
+inline constexpr std::string_view LINUX_SAVE_PATH = ".local/share/Nurv/";
+inline constexpr std::string_view MACOS_SAVE_PATH = "Library/Application Support/Nurv/";

@@ -23,7 +23,7 @@ namespace {
         while (!directories_left.empty()) {
             std::filesystem::path current = directories_left.front();
             directories_left.pop_front();
-            for (const auto& entry : std::filesystem::directory_iterator(targetDir)) {
+            for (const auto& entry : std::filesystem::directory_iterator(current)) {
                 if (entry.is_directory()) {
                     directories_left.push_back(entry.path());
                 } else if (entry.is_regular_file()) {
