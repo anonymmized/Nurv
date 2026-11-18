@@ -11,6 +11,7 @@ enum class Arguments {
 struct ParsedCmd {
     Arguments argument;
     std::vector<std::string> targetDirectory;
+    std::vector<std::string> names_to_find;
 };
 
 ParsedCmd parseCommandLine(int argc, char** argv);
