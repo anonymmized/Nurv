@@ -56,6 +56,15 @@ ParsedCmd parseCommandLine(int argc, char** argv) {
             if (flags.names) {
                 cmd.names_to_find.push_back(std::string(argv[i]));
             }
+            if (flags.extensions) {
+                cmd.extensions_to_find.push_back(std::string(argv[i]));
+            }
+            if (flags.path) {
+                cmd.path_to_find.push_back(std::string(argv[i]));
+            }
+            if (flags.size) {
+                cmd.size_to_find.push_back(std::string(argv[i]));
+            }
             if (std::string(argv[i]) == "--name") {
                 flags.names = true;
                 flags.extensions = false;
