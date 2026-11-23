@@ -103,3 +103,16 @@ std::vector<FileEntry> searchBySize(const std::vector<FileEntry>& files, const s
     }
     return finalFiles;
 }
+
+std::vector<FileEntry> searchByPath(const std::vector<FileEntry>& files, const std::string& targetPath) {
+    if (files.empty()) {
+        throw std::runtime_error("Scanned directory is empty");
+    }
+    std::vector<FileEntry> finalFiles;
+    for (const auto& file : files) {
+        if (file.file_path.string().find(targetPath) != std::string::npos) {
+            finalFiles.push_back(file);
+        }
+    }
+    return finalFiles;
+}
