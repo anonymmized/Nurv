@@ -53,6 +53,31 @@ ParsedCmd parseCommandLine(int argc, char** argv) {
     } else if (argc > 3 && cmd.argument == Arguments::Search) {
         SearchFlags flags;
         for (int i = 2; i < argc; i++) {
+            if (std::string(argv[i]) == "--name") {
+                flags.names = true;
+                flags.extensions = false;
+                flags.path = false;
+                flags.size = false;
+                continue;
+            } else if (std::string(argv[i]) == "--ext") {
+                flags.extensions = true;
+                flags.names = false;
+                flags.path = false;
+                flags.size = false;
+                continue;
+            } else if (std::string(argv[i]) == "--size") {
+                flags.size = true;
+                flags.extensions = false;
+                flags.path = false;
+                flags.names = false;
+                continue;
+            } else if (std::string(argv[i]) == "--path") {
+                flags.path = true;
+                flags.extensions = false;
+                flags.size = false;
+                flags.names = false;
+                continue;
+            } 
             if (flags.names) {
                 cmd.names_to_find.push_back(std::string(argv[i]));
             }
@@ -64,27 +89,6 @@ ParsedCmd parseCommandLine(int argc, char** argv) {
             }
             if (flags.size) {
                 cmd.size_to_find.push_back(std::string(argv[i]));
-            }
-            if (std::string(argv[i]) == "--name") {
-                flags.names = true;
-                flags.extensions = false;
-                flags.path = false;
-                flags.size = false;
-            } else if (std::string(argv[i]) == "--ext") {
-                flags.extensions = true;
-                flags.names = false;
-                flags.path = false;
-                flags.size = false;
-            } else if (std::string(argv[i]) == "--size") {
-                flags.size = true;
-                flags.extensions = false;
-                flags.path = false;
-                flags.names = false;
-            } else if (std::string(argv[i]) == "--path") {
-                flags.path = true;
-                flags.extensions = false;
-                flags.size = false;
-                flags.names = false;
             }
         }
     }

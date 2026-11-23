@@ -1,4 +1,4 @@
-#pragma 
+#pragma once 
 
 #include "parse_cmd_line.hpp"
 #include "types.hpp"

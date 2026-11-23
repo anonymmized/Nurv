@@ -26,6 +26,9 @@ namespace {
     }
 
     int getOnlyDigits(const std::string& in_str, int first_position) {
+        if (in_str.size() <= first_position) {
+            throw std::invalid_argument("Number is missing after operator");
+        }
         std::string only_digits = in_str.substr(first_position);
         if (!onlyDigits(only_digits)) {
             throw std::invalid_argument("Usage: Operator + Number: >1000 or =500");
@@ -35,21 +38,31 @@ namespace {
 
     ComparisonOperator getOperator(const std::string& in_str) {
         ComparisonOperator cp_op;
-        if (in_str[0] == '>' && (in_str[1] >= '0' && in_str[1] <= '9')) {
-            cp_op.greater = getOnlyDigits(in_str, 1); 
-        } else if (in_str[0] == '<' && (in_str[1] >= '0' && in_str[1] <= '9')) {
-            cp_op.less = getOnlyDigits(in_str, 1);
-        } else if (in_str[0] == '=' && (in_str[1] >= '0' && in_str[1] <= '9')) {
-            cp_op.equal = getOnlyDigits(in_str, 1);
-        } else if (in_str[0] == '>' && in_str[1] == '=' && (in_str[2] >= '0' && in_str[2] <= '9')) {
+        if (in_str.size() < 2) {
+            throw std::invalid_argument("Usage: >100, >=100, <100, <=100 or =100");
+        }
+        if (in_str[0] == '>' && in_str[1] == '=') {
+            if (in_str.size() < 3) {
+                throw std::invalid_argument("Number is missing after >=");
+            }
             cp_op.greaterOrEqual = getOnlyDigits(in_str, 2);
-        } else if (in_str[0] == '<' && in_str[1] == '=' && (in_str[2] >= '0' && in_str[2] <= '9')) {
+        } else if (in_str[0] == '<' && in_str[1] == '=') {
+            if (in_str.size() < 3) {
+                throw std::invalid_argument("Number is missing after <=");
+            }
             cp_op.lessOrEqual = getOnlyDigits(in_str, 2);
+        } else if (in_str[0] == '>') {
+            cp_op.greater = getOnlyDigits(in_str, 1);
+        } else if (in_str[0] == '<') {
+            cp_op.less = getOnlyDigits(in_str, 1);
+        } else if (in_str[0] == '=') {
+            cp_op.equal = getOnlyDigits(in_str, 1);
         } else {
-            throw std::invalid_argument("There is no operator like this");
+            throw std::invalid_argument("Unknown comparison operator");
         }
         return cp_op;
     }
+
 };
 
 std::vector<FileEntry> searchByName(const std::vector<FileEntry>& files, const std::string& targetName) {
@@ -58,7 +71,8 @@ std::vector<FileEntry> searchByName(const std::vector<FileEntry>& files, const s
     }
     std::vector<FileEntry> finalFiles;
     for (const auto& file : files) {
-        if (file.name == targetName) {
+        size_t position = file.name.find(targetName);
+        if (position != std::string::npos) {
             finalFiles.push_back(file);
         }
     }
@@ -69,9 +83,16 @@ std::vector<FileEntry> searchByExtension(const std::vector<FileEntry>& files, co
     if (files.empty()) {
         throw std::runtime_error("Scanned directory is empty");
     }
+    std::string extension = targetExtension;
+    if (extension.empty()) {
+        throw std::invalid_argument("Extension cannot be empty");
+    }
+    if (extension[0] != '.') {
+        extension = "." + extension;
+    }
     std::vector<FileEntry> finalFiles;
     for (const auto& file : files) {
-        if (file.extension == targetExtension) {
+        if (file.extension == extension) {
             finalFiles.push_back(file);
         }
     }
