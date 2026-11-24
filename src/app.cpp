@@ -9,27 +9,38 @@
 
 namespace {
     template <typename SearchFunction>
-    void processSearch(const std::vector<FileEntry>& files, const std::vector<std::string>& targets, SearchFunction searchFunction) {
+    std::vector<FileEntry> processSearch(const std::vector<FileEntry>& files, const std::vector<std::string>& targets, SearchFunction searchFunction) {
+        std::vector<FileEntry> finalFound;
         for (const auto& target : targets) {
             std::vector<FileEntry> found = searchFunction(files, target);
-            if (found.empty()) {
-                std::cout << "Nothing found for: " << target << '\n';
-                continue;
-            }
-            std::cout << "Found for \"" << target << "\":\n";
-            for (const auto& file : found) {
-                std::cout << '\t' << file.file_path << '\n';
-            }
-            std::cout << '\n';
+            finalFound.insert(finalFound.end(), found.begin(), found.end());
+        }
+        return finalFound;
+    }
+    
+    void printMatches(const std::vector<FileEntry>& matches) {
+        std::cout << "Found " << matches.size() << " matches\n";
+        for (const auto& match : matches) {
+            std::cout << '\t' << match.file_path << '\n';
         }
     }
 }
 
 void App::processAllSearches(const std::vector<FileEntry>& loaded) {
-    processSearch(loaded, cmd.names_to_find, searchByName);
-    processSearch(loaded, cmd.extensions_to_find, searchByExtension);
-    processSearch(loaded, cmd.path_to_find, searchByPath);
-    processSearch(loaded, cmd.size_to_find, searchBySize);
+    std::vector<FileEntry> allFoundMatches = loaded;
+    if (!cmd.names_to_find.empty()) {
+        allFoundMatches = processSearch(allFoundMatches, cmd.names_to_find, searchByName);
+    }
+    if (!cmd.extensions_to_find.empty()) {
+        allFoundMatches = processSearch(allFoundMatches, cmd.extensions_to_find, searchByExtension);
+    }
+    if (!cmd.path_to_find.empty()) {
+        allFoundMatches = processSearch(allFoundMatches, cmd.path_to_find, searchByPath);
+    }
+    if (!cmd.size_to_find.empty()) { 
+        allFoundMatches = processSearch(allFoundMatches, cmd.size_to_find, searchBySize);
+    }
+    printMatches(allFoundMatches);
 }
 
 void App::run() {

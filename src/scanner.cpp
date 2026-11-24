@@ -6,7 +6,7 @@
 namespace {
     FileEntry getFileEntry(const std::filesystem::directory_entry& entry) {
         FileEntry file;
-        file.file_path = entry.path();
+        file.file_path = std::filesystem::absolute(entry.path()).lexically_normal();
         file.name = entry.path().filename().string();
         file.extension = entry.path().extension().string();
         file.size = entry.file_size();
