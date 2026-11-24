@@ -3,14 +3,20 @@
 
 #include <vector>
 #include <string>
+#include <cstdint>
 
 namespace {
+    enum class ComparisonType {
+        Less,
+        LessOrEqual,
+        Equal,
+        GreaterOrEqual,
+        Greater
+    };
+
     struct ComparisonOperator {
-        int less = 0;
-        int lessOrEqual = 0;
-        int equal = 0;
-        int greaterOrEqual = 0;
-        int greater = 0;
+        ComparisonType type;
+        std::uintmax_t value;
     };
 
     bool onlyDigits(const std::string& s) {
@@ -25,15 +31,15 @@ namespace {
         return true;
     }
 
-    int getOnlyDigits(const std::string& in_str, int first_position) {
+    std::uintmax_t getOnlyDigits(const std::string& in_str, size_t first_position) {
         if (in_str.size() <= first_position) {
-            throw std::invalid_argument("Number is missing after operator");
+            throw std::invalid_argument("Number is missing");
         }
         std::string only_digits = in_str.substr(first_position);
         if (!onlyDigits(only_digits)) {
             throw std::invalid_argument("Usage: Operator + Number: >1000 or =500");
         }
-        return std::stoi(only_digits);
+        return std::stoull(only_digits);
     }
 
     ComparisonOperator getOperator(const std::string& in_str) {
@@ -45,18 +51,23 @@ namespace {
             if (in_str.size() < 3) {
                 throw std::invalid_argument("Number is missing after >=");
             }
-            cp_op.greaterOrEqual = getOnlyDigits(in_str, 2);
+            cp_op.type = ComparisonType::GreaterOrEqual;
+            cp_op.value = getOnlyDigits(in_str, 2);
         } else if (in_str[0] == '<' && in_str[1] == '=') {
             if (in_str.size() < 3) {
                 throw std::invalid_argument("Number is missing after <=");
             }
-            cp_op.lessOrEqual = getOnlyDigits(in_str, 2);
+            cp_op.type = ComparisonType::LessOrEqual;
+            cp_op.value = getOnlyDigits(in_str, 2);
         } else if (in_str[0] == '>') {
-            cp_op.greater = getOnlyDigits(in_str, 1);
+            cp_op.type = ComparisonType::Greater;
+            cp_op.value = getOnlyDigits(in_str, 1);
         } else if (in_str[0] == '<') {
-            cp_op.less = getOnlyDigits(in_str, 1);
+            cp_op.type = ComparisonType::Less;
+            cp_op.value = getOnlyDigits(in_str, 1);
         } else if (in_str[0] == '=') {
-            cp_op.equal = getOnlyDigits(in_str, 1);
+            cp_op.type = ComparisonType::Equal;
+            cp_op.value = getOnlyDigits(in_str, 1);
         } else {
             throw std::invalid_argument("Unknown comparison operator");
         }
@@ -106,19 +117,25 @@ std::vector<FileEntry> searchBySize(const std::vector<FileEntry>& files, const s
     ComparisonOperator comp_op = getOperator(targetSize);
     std::vector<FileEntry> finalFiles;
     for (const auto& file : files) {
-        if (comp_op.less > 0 && file.size < comp_op.less) {
-            finalFiles.push_back(file);
-        } 
-        if (comp_op.lessOrEqual > 0 && file.size <= comp_op.lessOrEqual) {
-            finalFiles.push_back(file);
+        bool matches = false;
+        switch (comp_op.type) {
+            case ComparisonType::Less:
+                matches = file.size < comp_op.value;
+                break;
+            case ComparisonType::LessOrEqual:
+                matches = file.size <= comp_op.value;
+                break;
+            case ComparisonType::Equal:
+                matches = file.size == comp_op.value;
+                break;
+            case ComparisonType::GreaterOrEqual:
+                matches = file.size >= comp_op.value;
+                break;
+            case ComparisonType::Greater:
+                matches = file.size > comp_op.value;
+                break;
         }
-        if (comp_op.equal > 0 && file.size == comp_op.equal) {
-            finalFiles.push_back(file);
-        }
-        if (comp_op.greaterOrEqual > 0 && file.size >= comp_op.greaterOrEqual) {
-            finalFiles.push_back(file);
-        }
-        if (comp_op.greater > 0 && file.size > comp_op.greater) {
+        if (matches) {
             finalFiles.push_back(file);
         }
     }
