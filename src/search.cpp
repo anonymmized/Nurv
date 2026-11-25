@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <cctype>
 #include <cstdint>
 
 namespace {
@@ -31,15 +32,44 @@ namespace {
         return true;
     }
 
-    std::uintmax_t getOnlyDigits(const std::string& in_str, size_t first_position) {
+    size_t findLastDigit(const std::string& str) {
+        for (size_t i = str.size(); i > 0; --i) {
+            if (std::isdigit(static_cast<unsigned char>(str[i-1]))) {
+                return i-1;
+            }
+        }
+        return std::string::npos;
+    }
+
+    uintmax_t parseSizeToBytes(const std::string& in_str, size_t first_position) {
         if (in_str.size() <= first_position) {
             throw std::invalid_argument("Number is missing");
         }
-        std::string only_digits = in_str.substr(first_position);
+        size_t lastDigit = findLastDigit(in_str);
+        if (lastDigit == std::string::npos || lastDigit < first_position) {
+            throw std::invalid_argument("Number is missing");
+        }
+        std::string only_digits = in_str.substr(first_position, lastDigit - first_position + 1);
         if (!onlyDigits(only_digits)) {
             throw std::invalid_argument("Usage: Operator + Number: >1000 or =500");
         }
-        return std::stoull(only_digits);
+        auto num_in_bytes = std::stoull(only_digits);
+        std::string unit = in_str.substr(lastDigit + 1);
+        for (char& c : unit) {
+            c = std::tolower(static_cast<unsigned char>(c));
+        }
+        if (unit.empty() || unit == "b") {
+            return num_in_bytes;
+        } else if (unit == "kb") {
+            num_in_bytes *= 1024;
+        } else if (unit == "mb") {
+            num_in_bytes *= 1024 * 1024;
+        } else if (unit == "gb") {
+            num_in_bytes *= 1024ull * 1024ull * 1024ull;
+        } else {
+            throw std::invalid_argument("Invalid size format. Use: >100, >100B, >100KB, >100MB, >100GB");
+        }
+        return num_in_bytes;
     }
 
     ComparisonOperator getOperator(const std::string& in_str) {
@@ -52,22 +82,22 @@ namespace {
                 throw std::invalid_argument("Number is missing after >=");
             }
             cp_op.type = ComparisonType::GreaterOrEqual;
-            cp_op.value = getOnlyDigits(in_str, 2);
+            cp_op.value = parseSizeToBytes(in_str, 2);
         } else if (in_str[0] == '<' && in_str[1] == '=') {
             if (in_str.size() < 3) {
                 throw std::invalid_argument("Number is missing after <=");
             }
             cp_op.type = ComparisonType::LessOrEqual;
-            cp_op.value = getOnlyDigits(in_str, 2);
+            cp_op.value = parseSizeToBytes(in_str, 2);
         } else if (in_str[0] == '>') {
             cp_op.type = ComparisonType::Greater;
-            cp_op.value = getOnlyDigits(in_str, 1);
+            cp_op.value = parseSizeToBytes(in_str, 1);
         } else if (in_str[0] == '<') {
             cp_op.type = ComparisonType::Less;
-            cp_op.value = getOnlyDigits(in_str, 1);
+            cp_op.value = parseSizeToBytes(in_str, 1);
         } else if (in_str[0] == '=') {
             cp_op.type = ComparisonType::Equal;
-            cp_op.value = getOnlyDigits(in_str, 1);
+            cp_op.value = parseSizeToBytes(in_str, 1);
         } else {
             throw std::invalid_argument("Unknown comparison operator");
         }
